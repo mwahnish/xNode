@@ -21,7 +21,7 @@ namespace XNodeEditor {
             Matrix4x4 m = GUI.matrix;
             if (graph == null) return;
             ValidateGraphEditor();
-            Controls();
+            
 
             DrawGrid(position, zoom, panOffset);
             DrawConnections();
@@ -30,14 +30,14 @@ namespace XNodeEditor {
             DrawSelectionBox();
             DrawTooltip();
             graphEditor.OnGUI();
-
+            Controls();
             // Run and reset onLateGUI
             if (onLateGUI != null) {
                 onLateGUI();
                 onLateGUI = null;
             }
 
-            GUI.matrix = m;
+            //GUI.matrix = m;
         }
 
         public static void BeginZoomed(Rect rect, float zoom, float topPadding) {
