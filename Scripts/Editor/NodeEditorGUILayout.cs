@@ -238,6 +238,25 @@ namespace XNodeEditor {
             GUILayout.EndHorizontal();
         }
 
+        /// <summary> Draws an input and an output port on the same line </summary>
+        public static void PortPair(XNode.NodePort input, GUIContent inputLabel, XNode.NodePort output, GUIContent outputLabel)
+        {
+            GUILayout.BeginHorizontal();
+            NodeEditorGUILayout.PortField(inputLabel, input);
+            NodeEditorGUILayout.PortField(outputLabel, output);
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary> Draws an input and an output port on the same line </summary>
+        public static void PortPair(XNode.NodePort input, GUIContent label, XNode.NodePort output)
+        {
+            GUILayout.BeginHorizontal();
+            NodeEditorGUILayout.PortField(input, GUILayout.MinWidth(0));
+            EditorGUILayout.LabelField(label);
+            NodeEditorGUILayout.PortField(output, GUILayout.MinWidth(0));
+            GUILayout.EndHorizontal();
+        }
+
         public static void DrawPortHandle(Rect rect, Color backgroundColor, Color typeColor) {
             Color col = GUI.color;
             GUI.color = backgroundColor;
