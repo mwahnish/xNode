@@ -149,7 +149,11 @@ namespace XNode {
         /// <returns> <see cref="NodePort.GetOutputValue"/> </returns>
         public T GetInputValue<T>() {
             object obj = GetInputValue();
-            return obj is T ? (T) obj : default(T);
+
+            if (AreCastablePrimitives(obj.GetType(), typeof(T)))
+                return (T) Convert.ChangeType( obj,typeof(T));
+            else
+                return obj is T ? (T) obj : default(T);
         }
 
         /// <summary> Return the output values of all connected ports. </summary>
@@ -158,7 +162,10 @@ namespace XNode {
             object[] objs = GetInputValues();
             T[] ts = new T[objs.Length];
             for (int i = 0; i < objs.Length; i++) {
-                if (objs[i] is T) ts[i] = (T) objs[i];
+                if (AreCastablePrimitives(objs[i].GetType(), typeof(T)))
+                    ts[i] = (T)Convert.ChangeType(objs[i], typeof(T));
+                else if (objs[i] is T)
+                    ts[i] = (T) objs[i];
             }
             return ts;
         }
@@ -167,7 +174,12 @@ namespace XNode {
         /// <returns> <see cref="NodePort.GetOutputValue"/> </returns>
         public bool TryGetInputValue<T>(out T value) {
             object obj = GetInputValue();
-            if (obj is T) {
+
+            if (AreCastablePrimitives(obj.GetType(), typeof(T)))
+            {
+                value = (T)Convert.ChangeType(obj, typeof(T));
+                return false;
+            }else if (obj is T) {
                 value = (T) obj;
                 return true;
             } else {
@@ -270,15 +282,36 @@ namespace XNode {
             // If there isn't one of each, they can't connect
             if (input == null || output == null) return false;
             // Check input type constraints
-            if (input.typeConstraint == XNode.Node.TypeConstraint.Inherited && !input.ValueType.IsAssignableFrom(output.ValueType)) return false;
+            if (input.typeConstraint == XNode.Node.TypeConstraint.Inherited && !AreCastable(input.ValueType, output.ValueType)) return false;
             if (input.typeConstraint == XNode.Node.TypeConstraint.Strict && input.ValueType != output.ValueType) return false;
-            if (input.typeConstraint == XNode.Node.TypeConstraint.InheritedInverse && !output.ValueType.IsAssignableFrom(input.ValueType)) return false;
+            if (input.typeConstraint == XNode.Node.TypeConstraint.InheritedInverse && !AreCastable(output.ValueType, input.ValueType)) return false;
             // Check output type constraints
-            if (output.typeConstraint == XNode.Node.TypeConstraint.Inherited && !input.ValueType.IsAssignableFrom(output.ValueType)) return false;
+            if (output.typeConstraint == XNode.Node.TypeConstraint.Inherited && !AreCastable(input.ValueType, output.ValueType)) return false;
             if (output.typeConstraint == XNode.Node.TypeConstraint.Strict && input.ValueType != output.ValueType) return false;
-            if (output.typeConstraint == XNode.Node.TypeConstraint.InheritedInverse && !output.ValueType.IsAssignableFrom(input.ValueType)) return false;
+            if (output.typeConstraint == XNode.Node.TypeConstraint.InheritedInverse && !AreCastable(output.ValueType, input.ValueType)) return false;
             // Success
             return true;
+        }
+
+        private bool AreCastable(System.Type to, System.Type from)
+        {
+            bool assignable = to.IsAssignableFrom(from);
+            bool primitiveCastable = AreCastablePrimitives(to, from);
+            return assignable || primitiveCastable;
+        }
+
+        private bool AreCastablePrimitives(System.Type to, System.Type from)
+        {
+            return to.IsPrimitive
+                && from.IsPrimitive
+                && to != typeof(bool)
+                && to != typeof(char)
+                && from != typeof(bool)
+                && from != typeof(char)
+                && to != typeof(System.Boolean)
+                && to != typeof(System.Char)
+                && from != typeof(System.Boolean)
+                && from != typeof(System.Char);
         }
 
         /// <summary> Disconnect this port from another port </summary>

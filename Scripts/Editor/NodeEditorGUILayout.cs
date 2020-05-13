@@ -279,6 +279,33 @@ namespace XNodeEditor {
             GUILayout.EndHorizontal();
         }
 
+        public static void PropertyAndPortPair(SerializedObject so, XNode.NodePort input, XNode.NodePort output)
+        {
+            XNode.Node.ShowBackingValue showBacking = XNode.Node.ShowBackingValue.Unconnected;
+            XNode.Node.InputAttribute inputAttribute;
+            bool dynamicPortList = false;
+            if (NodeEditorUtilities.GetCachedAttrib(input.node.GetType(), input.fieldName, out inputAttribute))
+            {
+                dynamicPortList = inputAttribute.dynamicPortList;
+                showBacking = inputAttribute.backingValue;
+            }
+
+            bool usePropertyAttributes = dynamicPortList ||
+                showBacking == XNode.Node.ShowBackingValue.Never ||
+                (showBacking == XNode.Node.ShowBackingValue.Unconnected && input.IsConnected);
+
+
+            if (!usePropertyAttributes)
+            {
+                PropertyField(so.FindProperty(input.fieldName));
+                PortField(output);
+            }
+            else 
+            {
+                PortPair(input, output);
+            }
+        }
+
         public static void DrawPortHandle(Rect rect, Color backgroundColor, Color typeColor) {
             Color col = GUI.color;
             GUI.color = backgroundColor;
